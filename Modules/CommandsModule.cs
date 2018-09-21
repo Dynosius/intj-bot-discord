@@ -17,20 +17,26 @@ namespace INTJBot.Modules
         [Command("assignme"), Summary("Assigns a desired role to the user")]
         public async Task AssignDesiredRole(string role)
         {
+            // TODO: Make an interchangeable list of roles that are forbidden for users to assing to themselves (e.g. moderator)
             var user = Context.User as IGuildUser;
             // Using this loop to collect the info on all roles of the server and remove all of them at once from the user
             List<IRole> roleList = new List<IRole>();
             foreach (var roleTemp in Context.Guild.Roles)
             {
-                if (!(roleTemp.Name.Equals("Admin") || roleTemp.Name.Equals("@everyone")))
+                // This can be overridden by permissions given to the bot POSSIBLY
+                if (!(roleTemp.Name.Equals("Admin") || roleTemp.Name.Equals("@everyone") || roleTemp.Name.Equals("Moderator") 
+                    || roleTemp.Name.Equals("Penalty Box")))
                 {
                     roleList.Add(roleTemp);
                 }
             }
             await user.RemoveRolesAsync(roleList);
             // After that, add the specific role that was passed on through the command
-            var roles = Context.Guild.Roles.FirstOrDefault(x => x.Name.ToLower() == role.ToLower());
-            if (roles != null) { await user.AddRoleAsync(roles); }
+            if(!(role.Equals("Admin") || role.Equals("Moderator")))
+            {
+                var roles = Context.Guild.Roles.FirstOrDefault(x => x.Name.ToLower() == role.ToLower());
+                if (roles != null) { await user.AddRoleAsync(roles); }
+            }
         }
     }
 }
