@@ -1,5 +1,6 @@
 ﻿using Discord;
 using Discord.Commands;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -17,14 +18,19 @@ namespace INTJBot.Modules
         public async Task AssignDesiredRole(string role)
         {
             var user = Context.User as IGuildUser;
-            var roles = Context.Guild.Roles.FirstOrDefault(x => x.Name.ToLower() == role.ToLower());
-            // Iterate through the list of all roles on the server and remove each one from the user
-            foreach (var roleOne in Context.Guild.Roles)
+            // Using this loop to collect the info on all roles of the server and remove all of them at once from the user
+            List<IRole> roleList = new List<IRole>();
+            foreach (var roleTemp in Context.Guild.Roles)
             {
-                // Skip admin and @everyone because obvious reasons
-                if (!(roleOne.Name.Equals("Admin") || roleOne.Name.Equals("@everyone"))) { await user.RemoveRoleAsync(roleOne); }
+                if (!(roleTemp.Name.Equals("Admin") || roleTemp.Name.Equals("@everyone")))
+                {
+                    roleList.Add(roleTemp);
+                }
             }
-            await user.AddRoleAsync(roles);
+            await user.RemoveRolesAsync(roleList);
+            // After that, add the specific role that was passed on through the command
+            var roles = Context.Guild.Roles.FirstOrDefault(x => x.Name.ToLower() == role.ToLower());
+            if (roles != null) { await user.AddRoleAsync(roles); }
         }
     }
 }
