@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Configuration;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -15,8 +14,8 @@ namespace INTJBot
         static void Main(string[] args)
         {
             //Console.WriteLine("Enter bot auth token: ");
-            //string auth = GetBotToken(OpenFileChooser());
-            string auth = ConfigurationManager.AppSettings["AuthenticationToken"];
+            string auth = GetBotToken(OpenFileChooser());
+
             new Bot(auth).Start().GetAwaiter().GetResult();
         }
         
