@@ -1,20 +1,22 @@
 ﻿using Discord;
 using Discord.Commands;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
 namespace INTJBot.Modules
 {
-    public class CommandsModule : ModuleBase
+    public class UserCommands : ModuleBase
     {
-
         [Command("ping")]
         [Alias("pong", "hello")]
         public Task PingAsync() => ReplyAsync("pong");
 
 
         [Command("assignme"), Summary("Assigns a desired role to the user")]
+        [RequireUserPermission(GuildPermission.SendMessages)]
+        [Alias("Assignme", "AssignMe", "assignMe")]
         public async Task AssignDesiredRole(string role)
         {
             // TODO: Make an interchangeable list of roles that are forbidden for users to assing to themselves (e.g. moderator)
@@ -32,9 +34,10 @@ namespace INTJBot.Modules
             }
             await user.RemoveRolesAsync(roleList);
             // After that, add the specific role that was passed on through the command
-            if(!(role.Equals("Admin") || role.Equals("Moderator")))
+            role = role.ToLower();
+            if(!(role.Equals("admin") || role.Equals("moderator")))
             {
-                var roles = Context.Guild.Roles.FirstOrDefault(x => x.Name.ToLower() == role.ToLower());
+                var roles = Context.Guild.Roles.FirstOrDefault(x => String.Equals(x.Name, role, StringComparison.InvariantCultureIgnoreCase));
                 if (roles != null) { await user.AddRoleAsync(roles); }
             }
         }
