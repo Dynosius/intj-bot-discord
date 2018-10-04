@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using System.Threading.Tasks;
 using System.Linq;
+using INTJBot.Models;
 
 namespace INTJBot
 {
@@ -15,7 +16,6 @@ namespace INTJBot
         private string authToken;
         private DiscordSocketClient client;
         private CommandService commands;
-        private UserManager manager;
         private IServiceProvider services;
         //Add database to keep roles in there?
         private List<string> forbiddenRoles = new List<string>();
@@ -27,7 +27,6 @@ namespace INTJBot
         {
             client = new DiscordSocketClient();
             commands = new CommandService();
-            manager = new UserManager();
             client.Log += LogAsync;
             client.UserJoined += UserJoinedAsync;
             client.UserLeft += UserLeftAsync;
@@ -76,16 +75,18 @@ namespace INTJBot
 
         private async Task UserJoinedAsync(SocketGuildUser user)
         {
-            //TODO: Save info on user to the database
+            // Save info on user to the database
+            await User.CheckAndAddUser(user);
+
+            // Announce user joined
             var channel = user.Guild.Channels.FirstOrDefault(x => x.Name == "general") as SocketTextChannel;
-            await channel.SendMessageAsync($"Welcome to { channel.Guild.Name }, { user.Username}, ID: { user.Id }; Joined at: { user.JoinedAt }; {user.Username }.");
+            await channel.SendMessageAsync($"Welcome to { channel.Guild.Name }, { user.Username}");
         }
 
         private async Task UserLeftAsync(SocketGuildUser user)
         {
-
             var channel = user.Guild.Channels.FirstOrDefault(x => x.Name == "general") as SocketTextChannel;
-            await channel.SendMessageAsync($"{user.Username}, ID: { user.Id } has left");
+            await channel.SendMessageAsync($"{user.Username} has left");
         }
     }
 }
