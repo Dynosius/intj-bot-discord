@@ -14,8 +14,6 @@ namespace INTJBot
         [STAThread]
         static void Main(string[] args)
         {
-            //Console.WriteLine("Enter bot auth token: ");
-            //string auth = GetBotToken(OpenFileChooser());
             string auth = ConfigurationManager.AppSettings["AuthenticationToken"];
             new Bot(auth).Start().GetAwaiter().GetResult();
         }

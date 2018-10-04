@@ -22,6 +22,7 @@ namespace INTJBot.Modules
             var builder = new EmbedBuilder();
             builder.WithTitle("User information");
             string roles = "";
+
             if (player != null)
             {
                 builder.Color = Color.Red;
@@ -30,7 +31,7 @@ namespace INTJBot.Modules
                 builder.AddInlineField("Username", player.Username);
                 foreach(RolesToUsers Role in roleToUser)
                 {
-                    roles += Role.RoleName + ", ";
+                    roles += Role.RoleName + " ";
                 }
                 builder.AddField("Role: ", roles);
                 foreach(Warning warn in listOfWarnings)
@@ -40,6 +41,28 @@ namespace INTJBot.Modules
             }
             
             await Context.Channel.SendMessageAsync("", false, builder);
+        }
+
+        [Command("warning"), Summary("Warns the user with a specific message and puts a warning in the database to the current user")]
+        [RequireUserPermission(GuildPermission.BanMembers)]
+        public async Task WarnUser([Remainder]string message)
+        {
+            string[] messageArray = message.Split(' ');
+            string warningReason = "";
+            User player = await User.GetUserByNickAsync(messageArray[0]);
+
+            if(player != null)
+            {
+                for(int i = 1; i < messageArray.Length; i++)
+                {
+                    warningReason = warningReason + messageArray[i] + " ";
+                }
+                int result = await Warning.InsertWarningInDb(player.UserId, warningReason);
+                if(result > 0)
+                {
+                    await Context.Channel.SendMessageAsync("Updated warnings for user " + player.Username +" successfully");
+                }
+            }
         }
     }
 }

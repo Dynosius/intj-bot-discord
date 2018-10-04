@@ -18,23 +18,39 @@ namespace INTJBot.Models
         internal async static Task<List<Warning>> GetUserWarnings(int userId)
         {
             string query = "SELECT WarningText FROM Warning WHERE WarnedUserId =" + userId;
-            using (var sqlConn = new SqlConnection(ConfigurationManager.ConnectionStrings["INTJBotDbConnection"].ConnectionString))
+            try
             {
-                try
+                using (var connection = new SqlConnection(ConfigurationManager.ConnectionStrings["INTJBotDbConnection"].ConnectionString))
                 {
-                    using (var connection = new SqlConnection(ConfigurationManager.ConnectionStrings["INTJBotDbConnection"].ConnectionString))
-                    {
-                        //connection.Open();
-                        var result = connection.Query<Warning>(query).ToList();
-                        return result;
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine(ex);
+                    //connection.Open();
+                    var result = connection.Query<Warning>(query).ToList();
+                    return result;
                 }
             }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+            }
             return null;
+        }
+
+        internal async static Task<int> InsertWarningInDb(int userId, string warningMessage)
+        {
+            string query = "INSERT INTO Warning (WarnedUserId, WarningText) VALUES ("+ userId + ",'" +  warningMessage + "')";
+            try
+            {
+                using (var connection = new SqlConnection(ConfigurationManager.ConnectionStrings["INTJBotDbConnection"].ConnectionString))
+                {
+                    connection.Open();
+                    SqlCommand sqlCmd = new SqlCommand(query, connection);
+                    return sqlCmd.ExecuteNonQuery();
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+                return 0;
+            }
         }
     }
 }

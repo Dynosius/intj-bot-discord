@@ -13,8 +13,8 @@ namespace INTJBot.Models
     internal class User
     {
         public int UserId { get; set; }
-        public string Username { get; set; }
         public int UserDiscordId { get; set; }
+        public string Username { get; set; }
         public string Nickname { get; set; }
         public DateTime DateJoined { get; set; }
 
@@ -34,9 +34,12 @@ namespace INTJBot.Models
             {
                 Console.WriteLine(ex);
             }
-
             return null;
         }
+
+         // New methods, checking if this works out of my lack of understanding of dapper
+
+
     }
 }
 
