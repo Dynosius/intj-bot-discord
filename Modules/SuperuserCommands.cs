@@ -17,7 +17,7 @@ namespace INTJBot.Modules
         [RequireUserPermission(GuildPermission.BanMembers)]
         public async Task ListUserInfo(string nick)
         {
-            User player = await User.GetUserByNickAsync(nick);
+            User player = await User.GetUserByUsernameAsync(nick);
             List<RolesToUsers> roleToUser = await RolesToUsers.GetUserRoles(player.UserId);
             List<Warning> listOfWarnings = await Warning.GetUserWarnings(player.UserId);
             var builder = new EmbedBuilder();
@@ -50,7 +50,7 @@ namespace INTJBot.Modules
         {
             string[] messageArray = message.Split(' ');
             string warningReason = "";
-            User player = await User.GetUserByNickAsync(messageArray[0]);
+            User player = await User.GetUserByUsernameAsync(messageArray[0]);
 
             if(player != null)
             {

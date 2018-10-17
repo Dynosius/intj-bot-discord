@@ -17,9 +17,9 @@ namespace INTJBot.Models
         public string Nickname { get; set; }
         public DateTime DateJoined { get; set; }
 
-        internal async static Task<User> GetUserByNickAsync(string nick)
+        internal async static Task<User> GetUserByUsernameAsync(string username)
         {
-            string query = "SELECT * FROM [User] WHERE Nickname='" + nick + "' OR Username='" + nick + "'";
+            string query = $"SELECT * FROM [User] WHERE Username='{username}' OR Nickname='{username}'";
             try
             {
                 using (var connection = new SqlConnection(ConfigurationManager.ConnectionStrings["INTJBotDbConnection"].ConnectionString))
@@ -43,7 +43,6 @@ namespace INTJBot.Models
                 connection.Open();
                 SqlCommand sqlCmd = new SqlCommand(query, connection);
                 var result = (Int32)sqlCmd.ExecuteScalar();
-                Console.WriteLine();
                 if (result == 0)
                 {
                     await InsertUserIntoDb(user);
@@ -62,7 +61,7 @@ namespace INTJBot.Models
             // This method is a bit confusing since I'm merging objects pulled from the database with the 
             // actual discord server objects, so I'm using similar names throughout
 
-            User userObject = await GetUserByNickAsync(user.Username);
+            User userObject = await GetUserByUsernameAsync(user.Username);
             List<RolesToUsers> dbRoles = await RolesToUsers.GetUserRoles(userObject.UserId);
             List<IRole> realRoles = new List<IRole>();
             // fill the list of roles with the user roles from the db
@@ -78,7 +77,7 @@ namespace INTJBot.Models
 
         private async static Task InsertUserIntoDb(SocketGuildUser user)
         {
-            string query = $"INSERT INTO [User] (Username, Nickname, DateJoined) VALUES ('{ user.Username }', '{ user.Nickname }', '{ user.JoinedAt }')";
+            string query = $"INSERT INTO [User] (Username, Nickname, DateJoined) VALUES ('{ user.Username }', '{user.Username}', '{ user.JoinedAt }')";
             try
             {
                 using (var connection = new SqlConnection(ConfigurationManager.ConnectionStrings["INTJBotDbConnection"].ConnectionString))
@@ -94,11 +93,24 @@ namespace INTJBot.Models
             }
         }
 
+        public async static Task ChangeNickname(SocketGuildUser user)
+        {
+            User dbUser = await GetUserByUsernameAsync(user.Username);
+            string newNickname = user.Nickname;
+            if (newNickname == null) newNickname = user.Username;
+            string query = $"UPDATE [User] SET Nickname='{newNickname}' WHERE Username='{user.Username}'";
+            using (var connection = new SqlConnection(ConfigurationManager.ConnectionStrings["INTJBotDbConnection"].ConnectionString))
+            {
+                connection.Open();
+                SqlCommand sqlCmd = new SqlCommand(query, connection);
+                sqlCmd.ExecuteNonQuery();
+            }
+        }
 
         // Updates the role of a given user inside the database. Invoked by a gateway event that is 'GuildMemberUpdated' which contains the role change information
         public async static Task UpdateRolesInDB(SocketGuildUser user)
         {
-            User dbUser = await GetUserByNickAsync(user.Username);
+            User dbUser = await GetUserByUsernameAsync(user.Username);
             string query = "DELETE FROM RolesToUsers WHERE UserID=" + dbUser.UserId;        /// First remove all roles in DB
             using (var connection = new SqlConnection(ConfigurationManager.ConnectionStrings["INTJBotDbConnection"].ConnectionString))
             {

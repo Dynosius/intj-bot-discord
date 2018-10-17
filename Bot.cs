@@ -90,6 +90,25 @@ namespace INTJBot
         // Fired off after user roles have been updated
         private async Task UserUpdatedAsync(SocketGuildUser beforeChange, SocketGuildUser afterChange)
         {
+            if(beforeChange.Nickname != null)
+            {
+                if (!beforeChange.Nickname.Equals(afterChange.Nickname))
+                {
+                    string nick = afterChange.Nickname;
+                    if(nick == null)
+                    {
+                        nick = afterChange.Username;
+                    }
+                    Console.WriteLine($"Nickname changed from { beforeChange.Nickname } to { nick } for user {afterChange.Username}");
+                    await User.ChangeNickname(afterChange);
+                }
+            }
+            else if(afterChange.Nickname != null)
+            {
+                Console.WriteLine($"User {afterChange.Username} set up new nickname: {afterChange.Nickname}");
+                await User.ChangeNickname(afterChange);
+            }
+            
             await User.UpdateRolesInDB(afterChange);
         }
     }
