@@ -98,6 +98,10 @@ namespace INTJBot.Models
             User dbUser = await GetUserByUsernameAsync(user.Username);
             string newNickname = user.Nickname;
             if (newNickname == null) newNickname = user.Username;
+            if (newNickname.Contains("'"))
+            {
+                newNickname = newNickname.Replace("'", "''");
+            }
             string query = $"UPDATE [User] SET Nickname='{newNickname}' WHERE Username='{user.Username}'";
             using (var connection = new SqlConnection(ConfigurationManager.ConnectionStrings["INTJBotDbConnection"].ConnectionString))
             {
