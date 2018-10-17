@@ -34,5 +34,31 @@ namespace INTJBot.Models
             }
             return null;
         }
+
+        public async static Task<Int32> GetRoleIdByName(string name)
+        {
+            string query = $"SELECT RoleId FROM Roles WHERE RoleName LIKE '{name}%'";
+            using (var sqlConn = new SqlConnection(ConfigurationManager.ConnectionStrings["INTJBotDbConnection"].ConnectionString))
+            {
+                try
+                {
+                    sqlConn.Open();
+                    var command = new SqlCommand(query, sqlConn);
+                    SqlDataReader reader = command.ExecuteReader();
+                    if (reader.HasRows)
+                    {
+                        reader.Read();
+                        Int32 roleId = reader.GetInt32(0);
+                        return roleId;
+                    }
+                    else return 0;
+                }
+                catch(Exception ex)
+                {
+                    Console.WriteLine(ex);
+                    return 0;
+                }
+            }
+        }
     }
 }

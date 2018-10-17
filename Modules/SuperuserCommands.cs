@@ -1,5 +1,6 @@
 ﻿using Discord;
 using Discord.Commands;
+using Discord.WebSocket;
 using INTJBot.Models;
 using System;
 using System.Collections.Generic;
@@ -23,6 +24,7 @@ namespace INTJBot.Modules
             builder.WithTitle("User information");
             string roles = "";
 
+            // Print out a text field with these values
             if (player != null)
             {
                 builder.Color = Color.Red;
@@ -39,7 +41,6 @@ namespace INTJBot.Modules
                     builder.AddField("Warning: ", warn.WarningText);
                 }
             }
-            
             await Context.Channel.SendMessageAsync("", false, builder);
         }
 

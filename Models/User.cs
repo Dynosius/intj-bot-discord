@@ -93,6 +93,46 @@ namespace INTJBot.Models
                 Console.WriteLine(ex.ToString());
             }
         }
+
+
+        // Updates the role of a given user inside the database. Invoked by a gateway event that is 'GuildMemberUpdated' which contains the role change information
+        public async static Task UpdateRolesInDB(SocketGuildUser user)
+        {
+            User dbUser = await GetUserByNickAsync(user.Username);
+            string query = "DELETE FROM RolesToUsers WHERE UserID=" + dbUser.UserId;        /// First remove all roles in DB
+            using (var connection = new SqlConnection(ConfigurationManager.ConnectionStrings["INTJBotDbConnection"].ConnectionString))
+            {
+                connection.Open();
+                var transaction = connection.BeginTransaction();
+                try
+                {
+                    SqlCommand sqlCmd = new SqlCommand(query, connection, transaction);
+                    var result = sqlCmd.ExecuteNonQuery();
+
+                    var roles = user.Roles;
+                    foreach (var iteratorRole in roles)
+                    {
+                        if (iteratorRole.Name.Length < 5)   // For the purposes of the INTJ Pub server, the only roles we're interested in are the MBTI types that only have 4 letters
+                        {
+                            int roleId = await RolesToUsers.GetRoleIdByName(iteratorRole.Name);
+                            if (roleId > 0)
+                            {
+                                query = $"INSERT INTO RolesToUsers (UserId, RoleId) VALUES ({dbUser.UserId}, {roleId})";     /// Then add the sequence of roles contained in user object
+                                sqlCmd = new SqlCommand(query, connection, transaction);
+                                sqlCmd.ExecuteNonQuery();
+                            }
+                        }
+                    }
+                    transaction.Commit();
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex);
+                    transaction.Rollback();
+                }
+
+            }
+        }
     }
 }
 

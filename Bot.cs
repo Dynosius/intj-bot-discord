@@ -30,6 +30,7 @@ namespace INTJBot
             client.Log += LogAsync;
             client.UserJoined += UserJoinedAsync;
             client.UserLeft += UserLeftAsync;
+            client.GuildMemberUpdated += UserUpdatedAsync;
             services = new ServiceCollection()
                     .BuildServiceProvider();
             await InstallCommands();
@@ -39,7 +40,6 @@ namespace INTJBot
 
             await Task.Delay(-1);
         }
-
 
         public async Task InstallCommands()
         {
@@ -77,7 +77,6 @@ namespace INTJBot
         {
             // Save info on user to the database
             await User.CheckAndAddUser(user);
-
             // Announce user joined
             var channel = user.Guild.Channels.FirstOrDefault(x => x.Name == "general") as SocketTextChannel;
             await channel.SendMessageAsync($"Welcome to { channel.Guild.Name }, { user.Username}");
@@ -87,6 +86,11 @@ namespace INTJBot
         {
             var channel = user.Guild.Channels.FirstOrDefault(x => x.Name == "general") as SocketTextChannel;
             await channel.SendMessageAsync($"{user.Username} has left");
+        }
+        // Fired off after user roles have been updated
+        private async Task UserUpdatedAsync(SocketGuildUser beforeChange, SocketGuildUser afterChange)
+        {
+            await User.UpdateRolesInDB(afterChange);
         }
     }
 }
